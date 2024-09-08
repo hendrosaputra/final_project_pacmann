@@ -107,14 +107,24 @@ def one_hot_encode_column(X, column_name):
     return X
 
 # Contoh penggunaan dari kode di atas
-
 # 1. Membaca dataset
 dataset = read_dataset('data/Air_Plane_Passenger_Data.csv')
 
+
 # 2. Pastikan dataset tidak kosong (None)
 if dataset is not None:
-    # 3. Mengisi nilai yang hilang dengan rata-rata kolom
-    dataset.fillna(dataset.mean(), inplace=True)
+    # Jika dataset besar, gunakan subset untuk mempercepat uji coba
+    dataset = dataset.sample(frac=0.1, random_state=42)  # Mengambil 10% dari data untuk uji coba
+
+    # Pisahkan kolom numerik dan non-numerik
+    numeric_cols = dataset.select_dtypes(include=['number']).columns
+    non_numeric_cols = dataset.select_dtypes(exclude=['number']).columns
+
+    # 3. Mengisi nilai yang hilang
+    dataset[numeric_cols] = dataset[numeric_cols].fillna(dataset[numeric_cols].mean())  # Isi missing values dengan rata-rata pada kolom numerik
+    dataset[non_numeric_cols] = dataset[non_numeric_cols].fillna(dataset[non_numeric_cols].mode().iloc[0])  # Isi missing values dengan modus pada kolom non-numerik
+
+    print("Nilai yang hilang telah diisi.")
     
     # 4. Mendefinisikan kolom fitur dan target
     feature_cols = ['Gender', 'Customer Type', 'Age', 'Type of Travel', 'Class', 'Flight Distance',
